@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片投票</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* 修改为flex-start */
+            min-height: 100vh; /* 确保页面高度至少为视口高度 */
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px; /* 减少内边距 */
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            margin: 20px 0; /* 增加外边距 */
+            width: 90%; /* 调整宽度 */
+            max-width: 600px; /* 最大宽度 */
+        }
+        .image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .buttons {
+            margin-top: 10px;
+        }
+        .buttons button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .buttons button:hover {
+            background-color: #0056b3;
+        }
+        .buttons button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .form-container {
+            margin-top: 20px;
+            text-align: left;
+        }
+        .form-container .totals {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>图片投票</h1>
+        <div class="image-container">
+            <img src="下载1.jpg" alt="投票图片1" class="image">
+            <div class="buttons">
+                <button id="like-1" onclick="vote('like', 1)">喜欢</button>
+                <button id="dislike-1" onclick="vote('dislike', 1)">不喜欢</button>
+            </div>
+        </div>
+        <div class="image-container">
+            <img src="下载2.jpg" alt="投票图片2" class="image">
+            <div class="buttons">
+                <button id="like-2" onclick="vote('like', 2)">喜欢</button>
+                <button id="dislike-2" onclick="vote('dislike', 2)">不喜欢</button>
+            </div>
+        </div>
+        <div class="image-container">
+            <img src="下载3.jpg" alt="投票图片3" class="image">
+            <div class="buttons">
+                <button id="like-3" onclick="vote('like', 3)">喜欢</button>
+                <button id="dislike-3" onclick="vote('dislike', 3)">不喜欢</button>
+            </div>
+        </div>
+        <div class="image-container">
+            <img src="下载4.jpg" alt="投票图片4" class="image">
+            <div class="buttons">
+                <button id="like-4" onclick="vote('like', 4)">喜欢</button>
+                <button id="dislike-4" onclick="vote('dislike', 4)">不喜欢</button>
+            </div>
+        </div>
+        <div class="form-container">
+            <form id="vote-form">
+                <div class="totals">
+                    喜欢的总数量: <span id="total-likes">0</span><br>
+                    不喜欢的总数量: <span id="total-dislikes">0</span>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        function setCookie(name, value, days) {
+            var expires = "";
+            if (days) {
+                var date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "") + expires + "; path=/";
+        }
+
+        function getCookie(name) {
+            var nameEQ = name + "=";
+            var ca = document.cookie.split(';');
+            for (var i = 0; i < ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+
+        function vote(type, imageId) {
+            var cookieName = "voted_" + imageId;
+            var existingVote = getCookie(cookieName);
+            if (existingVote) {
+                alert('你已经对图片' + imageId + '投过票了: ' + (existingVote === 'like' ? '喜欢' : '不喜欢'));
+                return;
+            }
+            setCookie(cookieName, type, 7); // 设置cookie，有效期7天
+
+            // 更新总数量的cookie
+            var totalLikes = parseInt(getCookie('total_likes') || '0');
+            var totalDislikes = parseInt(getCookie('total_dislikes') || '0');
+            if (type === 'like') {
+                totalLikes++;
+                setCookie('total_likes', totalLikes, 7);
+            } else {
+                totalDislikes++;
+                setCookie('total_dislikes', totalDislikes, 7);
+            }
+
+            alert('你对图片' + imageId + '选择了: ' + (type === 'like' ? '喜欢' : '不喜欢'));
+            document.getElementById('like-' + imageId).disabled = true;
+            document.getElementById('dislike-' + imageId).disabled = true;
+            updateTotals();
+        }
+
+        function updateTotals() {
+            var totalLikes = parseInt(getCookie('total_likes') || '0');
+            var totalDislikes = parseInt(getCookie('total_dislikes') || '0');
+            document.getElementById('total-likes').innerText = totalLikes;
+            document.getElementById('total-dislikes').innerText = totalDislikes;
+        }
+
+        // 初始化时禁用已投票的按钮，并更新总数
+        window.onload = function() {
+            for (var i = 1; i <= 4; i++) {
+                var cookieName = "voted_" + i;
+                var existingVote = getCookie(cookieName);
+                if (existingVote) {
+                    document.getElementById('like-' + i).disabled = true;
+                    document.getElementById('dislike-' + i).disabled = true;
+                }
+            }
+            updateTotals();
+        }
+    </script>
+</body>
+</html>
